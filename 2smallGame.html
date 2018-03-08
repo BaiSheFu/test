@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        canvas {
+            cursor: pointer;
+            border: 1px solid black;
+        }
+    </style>
+    <script>
+        // 这个方法用来储存每个圆圈对象
+        function Circle(x, y, radius,color) {
+            this.x = x;
+            this.y = y;
+            this.radius = radius;
+            this.color= color;
+            this.isClick = false;
+        }
+        var context;
+        var canvas;
+        //        存储每个圆
+        var circles = [];
+        window.onload = function() {
+            canvas = document.getElementById("canvas");
+            context = canvas.getContext("2d");
+//            canvas.onmousedown = canvasClick;
+            canvas.onmousedown = canvasMidClick;
+            drawRedRect();
+            draw16Hollow();
+
+
+            drawWord();
+
+        };
+        //        结束游戏回到初始状态
+        function endGame() {
+            if (needNum==clickNum){
+//
+//              setTimeout( function n() {
+                window.alert("666,太棒了，恭喜你再一次完成任务！！！");
+                document.location.reload();
+//              },2000);
+//                function n() {
+//                    window.alert("666,太棒了，恭喜你完成任务！！！");
+//                    document.location.reload();
+//                }
+
+//                重新加载页面
+
+
+            }
+
+        }
+        //        点击开始事件
+        function canvasMidClick(e) {
+            // 取得画布上被单击的点
+            var clickX = e.pageX - canvas.offsetLeft;
+            var clickY = e.pageY - canvas.offsetTop;
+//            window.alert(clickX+","+clickY);
+//            判断点击在字体区域
+            if(clickX<300&&clickX>210&&clickY<260&&clickY>230){
+                context.clearRect(210,230,100,30);
+                drawYellowCircles();
+                canvas.onmousedown = canvasClick;
+
+            }
+        }
+        //        画开始游戏文字
+        function drawWord() {
+            context.font ="bold 20px 黑体";
+            context.fillStyle = "Red";
+            var txt = "开始游戏";
+            context.fillText(txt,210,250,200);
+
+        }
+        //        生成16个空心圆
+        function draw16Hollow() {
+            draw5Circle();
+            draw4Circle();
+            draw4CircleH();
+            draw3Circle();
+        }
+        //        生成空心正方形
+        function drawRedRect() {
+
+            context.strokeStyle="#ff0000";
+            context.strokeRect(100,100,300,300);
+
+            context.stroke();
+        }
+        //        保存点击的三个圆状态
+        var secondCircles = [];
+        //        判断是否点击在圆上
+        function canvasClick(e) {
+            // 取得画布上被单击的点
+            var clickX = e.pageX - canvas.offsetLeft;
+            var clickY = e.pageY - canvas.offsetTop;
+
+//window.alert(clickX+","+clickY);
+            // 查找被单击的圆圈
+
+            for(var i=circles.length-1; i>=0; i--) {
+                var circle = circles[i];
+                //使用勾股定理计算这个点与圆心之间的距离
+                var distanceFromCenter = Math.sqrt(Math.pow(circle.x - clickX, 2)
+                    + Math.pow(circle.y - clickY, 2));
+                // 判断这个点是否在圆圈中
+
+                if (distanceFromCenter <= circle.radius) {
+
+
+
+//                    window.alert(secondCircles.length);
+//                    改变点击圆的颜色
+                    if (secondCircles.length < 2) {
+                        circle.isClick = true;
+                        circle.color = "yellow";
+                        secondCircles.push(circle);
+//                        window.alert(secondCircles.length);
+                    } else if (secondCircles.length == 2) {
+
+//                        window.alert(secondCircles[0].x + "," + secondCircles[1].x);
+                        if (Math.abs(secondCircles[0].x - secondCircles[1].x)<10) {
+                            if (Math.abs(circle.x -secondCircles[0].x)>10) {
+                                circle.color = "yellow";
+                                circle.isClick = true;
+                                secondCircles.push(circle);
+                            }
+                        }
+
+                        else if (Math.abs(secondCircles[0].y- secondCircles[1].y)<10) {
+                            if (Math.abs(circle.y -secondCircles[0].y)>10) {
+                                circle.color = "yellow";
+                                circle.isClick = true;
+                                secondCircles.push(circle);
+                            }
+
+                        }
+                        else {
+                            circle.color = "yellow";
+                            circle.isClick = true;
+                            secondCircles.push(circle);
+                        }
+
+
+                    }
+
+
+                    circles[i] = circle;
+//                    window.alert(circles[i].isClick);
+
+                    //更新显示
+                    drawYellowCircles();
+
+                    //停止搜索
+                    return;
+                }
+            }
+
+        }
+
+        var clickNum=0;
+        var needNum = 3;
+        //        刷新画布画黄色的画
+        function drawYellowCircles() {
+            // 清除画布，准备绘制
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            drawRedRect();
+//            临时变量
+            var temp=0;
+            // 遍历所有圆圈
+            drawBlueTriangle();
+            for(var i=0; i<circles.length; i++) {
+                var circle = circles[i];
+                if (circle.isClick&&secondCircles.length==3){
+                    circle.radius=1;
+
+                }
+
+                // 绘制圆圈
+                context.globalAlpha = 1;
+                context.beginPath();
+                context.arc(circle.x, circle.y, circle.radius, 0, Math.PI*2);
+                context.fillStyle = circle.color;
+                context.strokeStyle = "black";
+
+
+                if(circle.isClick){
+                    temp+=1;
+
+
+                    if (temp == needNum){
+                        clickNum=temp;
+//                        window.alert(clickNum);
+                    }
+                }
+                context.fill();
+                context.stroke();
+            }
+
+        }
+        //        生成蓝色空心三角形
+        function drawBlueTriangle() {
+            if(secondCircles.length==3){
+                context.strokeStyle="blue";
+                context.beginPath();
+                context.lineTo(secondCircles[0].x,secondCircles[0].y);
+                context.lineTo(secondCircles[1].x,secondCircles[1].y);
+                context.lineTo(secondCircles[2].x,secondCircles[2].y);
+                context.lineTo(secondCircles[0].x,secondCircles[0].y);
+                context.closePath();
+                context.stroke();
+            }
+        }
+        function draw5Circle(){
+            var x = 90;
+            var y = 140;
+            var radius = 18;
+            var color = "black";
+            for(var i=0;i<5;i++){
+                x+=54;
+                drawCircle(x,y,radius);
+                var circle = new Circle(x,y,radius,color);
+                circles.push(circle);
+            }
+        }
+        function draw3Circle(){
+            var x = 360;
+            var y = 136;
+            var radius = 18;
+            var color = "black";
+            for(var i=0;i<3;i++){
+                y+=54;
+                drawCircle(x,y,radius);
+                var circle = new Circle(x,y,radius,color);
+                circles.push(circle);
+            }
+        }
+        function draw4CircleH() {
+            var x = 140;
+            var y = 357;
+            var radius = 18;
+            var color = "black";
+            for (var i = 0; i < 4; i++) {
+                x += 54;
+                drawCircle(x, y, radius);
+                var circle = new Circle(x,y,radius,color);
+                circles.push(circle);
+            }
+        }
+        function draw4Circle(){
+            var x = 143;
+            var y = 140;
+            var radius = 18;
+            var color = "black";
+            for(var i=0;i<4;i++){
+                y+=54;
+                drawCircle(x,y,radius);
+                var circle = new Circle(x,y,radius,color);
+                circles.push(circle);
+            }
+        }
+        function drawCircle(x, y , radius) {
+            context.beginPath();
+
+            context.strokeStyle="#000000";
+            context.arc(x, y, radius, 0, 2 * Math.PI,true);
+            context.closePath();
+
+            context.stroke();
+
+
+        }
+
+    </script>
+</head>
+<body onclick="endGame()">
+<canvas id="canvas" width="500" height="500"  >
+    Your browser does not support the canvas element.
+</canvas>
+
+</body>
+</html>
